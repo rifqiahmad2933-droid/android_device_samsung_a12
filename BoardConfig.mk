@@ -1,23 +1,13 @@
+
 #
 # Copyright (C) 2024 The Android Open Source Project
 #
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-# http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Licensed under the Apache License, Version 2.0
 #
 
 DEVICE_PATH := device/samsung/a12
 
-# For building with minimal manifest
+# Minimal manifest
 ALLOW_MISSING_DEPENDENCIES := true
 
 # Bootloader
@@ -43,7 +33,6 @@ TARGET_2ND_CPU_VARIANT := cortex-a53
 TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a53
 
 TARGET_USES_64_BIT_BINDER := true
-
 TARGET_CPU_SMP := true
 ENABLE_CPUSETS := true
 ENABLE_SCHEDBOOST := true
@@ -60,31 +49,29 @@ TARGET_BOARD_PLATFORM_GPU := PowerVR GE8320
 TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/recovery-kernel
 TARGET_PREBUILT_DTB := $(DEVICE_PATH)/prebuilt/recovery-dtb
 BOARD_PREBUILT_DTBOIMAGE := $(DEVICE_PATH)/prebuilt/recovery-dtbo
-#BOARD_INCLUDE_DTB_IN_BOOTIMG := true
-BOARD_INCLUDE_RECOVERY_DTBO := true
-TARGET_KERNEL_ARCH := arm64
-
-# Boot
-BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2 androidboot.selinux=permissive
-TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/recovery-kernel
-TARGET_PREBUILT_DTB := $(DEVICE_PATH)/prebuilt/recovery-dtb
-BOARD_PREBUILT_DTBOIMAGE := $(DEVICE_PATH)/prebuilt/recovery-dtbo
-BOARD_INCLUDE_RECOVERY_DTBO := true
-BOARD_BOOTIMG_HEADER_VERSION := 2
-BOARD_KERNEL_BASE := 0x40078000
-BOARD_KERNEL_PAGESIZE := 2048
-BOARD_RAMDISK_OFFSET := 0x11a88000
-BOARD_KERNEL_TAGS_OFFSET := 0x07808000
-BOARD_FLASH_BLOCK_SIZE := 131072 # (BOARD_KERNEL_PAGESIZE * 64)
-BOARD_MKBOOTIMG_ARGS += --ramdisk_offset $(BOARD_RAMDISK_OFFSET)
-BOARD_MKBOOTIMG_ARGS += --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
-BOARD_MKBOOTIMG_ARGS += --dtb $(TARGET_PREBUILT_DTB)
-BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOTIMG_HEADER_VERSION)
-BOARD_KERNEL_IMAGE_NAME := Image.gz
-
 
 TARGET_KERNEL_ARCH := arm64
 TARGET_KERNEL_HEADER_ARCH := arm64
+
+BOARD_KERNEL_IMAGE_NAME := Image.gz
+BOARD_INCLUDE_RECOVERY_DTBO := true
+
+# Boot image configuration: Stock A125FXXS6CXJ1 U6
+BOARD_BOOTIMG_HEADER_VERSION := 2
+BOARD_KERNEL_BASE := 0x00000000
+BOARD_KERNEL_PAGESIZE := 2048
+BOARD_KERNEL_OFFSET := 0x40080000
+BOARD_RAMDISK_OFFSET := 0x51b00000
+BOARD_KERNEL_TAGS_OFFSET := 0x47880000
+BOARD_DTB_OFFSET := 0x47880000
+
+BOARD_MKBOOTIMG_ARGS += --board SRPTH05D006
+BOARD_MKBOOTIMG_ARGS += --cmdline "bootopt=64S3,32N2,64N2 loop.max_part=7"
+BOARD_MKBOOTIMG_ARGS += --ramdisk_offset $(BOARD_RAMDISK_OFFSET)
+BOARD_MKBOOTIMG_ARGS += --tags_offset $(BOARD_KERNEL_TAGS_OFFSET)
+BOARD_MKBOOTIMG_ARGS += --dtb_offset $(BOARD_DTB_OFFSET)
+BOARD_MKBOOTIMG_ARGS += --dtb $(TARGET_PREBUILT_DTB)
+BOARD_MKBOOTIMG_ARGS += --header_version $(BOARD_BOOTIMG_HEADER_VERSION)
 
 BOARD_CUSTOM_BOOTIMG_MK := $(DEVICE_PATH)/bootimg.mk
 
@@ -97,19 +84,14 @@ BOARD_FLASH_BLOCK_SIZE := 131072
 BOARD_BOOTIMAGE_PARTITION_SIZE := 33554432
 BOARD_RECOVERYIMAGE_PARTITION_SIZE := 33554432
 
-# Dynamic Partitions
+# Dynamic partitions
 BOARD_SUPER_PARTITION_SIZE := 8539602944
 BOARD_SUPER_PARTITION_GROUPS := samsung_dynamic_partitions
-
-# Set error limit to SUPER_PARTITION_SIZE - 500MB // 524288000 bytes
 BOARD_SUPER_PARTITION_ERROR_LIMIT := 8015314944
 
-# DYNAMIC_PARTITIONS_SIZE = (SUPER_PARTITION_SIZE / 2) - 4MB // 4194304 bytes
 BOARD_SAMSUNG_DYNAMIC_PARTITIONS_SIZE := 4265607168
 BOARD_SAMSUNG_DYNAMIC_PARTITIONS_PARTITION_LIST := system vendor product odm
 
-# Slightly overprovision dynamic partitions with 50MiB to
-# allow on-device file editing
 BOARD_SYSTEMIMAGE_PARTITION_RESERVED_SIZE := 62428800
 BOARD_VENDORIMAGE_PARTITION_RESERVED_SIZE := 62428800
 BOARD_PRODUCTIMAGE_PARTITION_RESERVED_SIZE := 62428800
@@ -118,11 +100,11 @@ BOARD_PRODUCTIMAGE_PARTITION_RESERVED_SIZE := 62428800
 BOARD_ROOT_EXTRA_FOLDERS := cache carrier data_mirror efs keyrefuge linkerconfig metadata omr optics prism spu
 BOARD_SUPPRESS_SECURE_ERASE := true
 
-# Workaround for error copying vendor files to recovery ramdisk
+# Vendor
 BOARD_VENDORIMAGE_FILE_SYSTEM_TYPE := ext4
 TARGET_COPY_OUT_VENDOR := vendor
 
-# Assert
+# Device assertion
 TARGET_OTA_ASSERT_DEVICE := a12 a12nseea
 AB_OTA_UPDATER := false
 
@@ -136,24 +118,27 @@ BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 0
 BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flag 0
 
 # Crypto
-PLATFORM_SECURITY_PATCH := 2099-12-31
-VENDOR_SECURITY_PATCH := 2099-12-31
+PLATFORM_SECURITY_PATCH := 2024-10-01
+VENDOR_SECURITY_PATCH := 2024-10-01
 PLATFORM_VERSION := 12
+
 TW_INCLUDE_CRYPTO := false
 TW_INCLUDE_CRYPTO_FBE := false
 TW_INCLUDE_FBE_METADATA_DECRYPT := false
 BOARD_USES_METADATA_PARTITION := true
 
-# TWRP specific build flags
-TW_DEVICE_VERSION := 12_Edward0181
+# TWRP
+TW_DEVICE_VERSION := 12_Edward0181_U6
 TW_THEME := portrait_hdpi
 RECOVERY_SDCARD_ON_DATA := true
 TARGET_RECOVERY_PIXEL_FORMAT := "RGBX_8888"
+
 TW_BRIGHTNESS_PATH := "/sys/class/backlight/panel/brightness"
 TW_MAX_BRIGHTNESS := 306
 TW_DEFAULT_BRIGHTNESS := 200
 TW_Y_OFFSET := 50
 TW_H_OFFSET := -50
+
 TW_NO_REBOOT_BOOTLOADER := true
 TW_HAS_DOWNLOAD_MODE := true
 TW_INCLUDE_NTFS_3G := true
@@ -167,7 +152,6 @@ TW_NO_BIND_SYSTEM := true
 TW_NO_SCREEN_BLANK := true
 TW_USE_MODEL_HARDWARE_ID_FOR_DEVICE_ID := true
 
-# Making the recovery.img smaller
+# Recovery image size optimization
 BOARD_HAS_NO_REAL_SDCARD := true
-# Compression
 BOARD_RAMDISK_USE_LZMA := true
